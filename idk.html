@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CODY TOES</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #6a0dad;
+      color: white;
+      overflow: hidden;
+    }
+    header {
+      background-color: #4b0082;
+      text-align: center;
+      padding: 1em;
+      font-size: 2em;
+      font-weight: bold;
+    }
+    .popup {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .popup-content {
+      background-color: #fff;
+      color: #333;
+      padding: 2em;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    button {
+      margin: 1em;
+      padding: 1em 2em;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      background-color: #6a0dad;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #4b0082;
+    }
+    input {
+      padding: 0.5em;
+      width: 80%;
+      margin-bottom: 1em;
+      border: 2px solid #6a0dad;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+    .auction {
+      display: flex;
+      justify-content: space-between;
+      margin: 30px;
+      display: none;
+    }
+    .auction-left {
+      flex: 1;
+      padding: 1em;
+    }
+    .auction-right {
+      width: 300px;
+      background: rgba(255,255,255,0.1);
+      padding: 1em;
+      border-radius: 10px;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+    .chat-msg {
+      margin: 0.5em 0;
+      background-color: rgba(255,255,255,0.2);
+      padding: 0.5em;
+      border-radius: 5px;
+    }
+    .money-counter {
+      font-size: 2em;
+      margin-top: 20px;
+      color: #00ff99;
+    }
+  </style>
+</head>
+<body>
+
+  <header>CODY TOES</header>
+
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <h2>Name your product before selling</h2>
+      <input type="text" id="productName" placeholder="Enter product name">
+      <br>
+      <button onclick="buyCodyToes()">Buy Cody Toes</button>
+      <button onclick="sellCodyToes()">Sell Cody Toes</button>
+    </div>
+  </div>
+
+  <div class="auction" id="auction">
+    <div class="auction-left">
+      <h2 id="auctionTitle"></h2>
+      <div id="bidText">Bidding starts at $500...</div>
+      <div class="money-counter" id="moneyCounter">$0</div>
+    </div>
+    <div class="auction-right" id="chatBox">
+      <h3>Live Reviews</h3>
+    </div>
+  </div>
+
+  <script>
+    function buyCodyToes() {
+      window.location.href = "https://www.google.com/search?q=buy+cody+toes";
+    }
+
+    function sellCodyToes() {
+      const name = document.getElementById('productName').value.trim();
+      if (!name) {
+        alert("Please enter a product name.");
+        return;
+      }
+
+      document.getElementById('popup').style.display = 'none';
+      document.getElementById('auction').style.display = 'flex';
+      document.getElementById('auctionTitle').textContent = `Auction: ${name}`;
+
+      let bid = 500;
+      let money = 0;
+      const bidText = document.getElementById('bidText');
+      const moneyCounter = document.getElementById('moneyCounter');
+      const chatBox = document.getElementById('chatBox');
+
+      const fakeMessages = [
+        "🔥 Best purchase I've made this week!",
+        "Eh, quality could be better.",
+        "Totally changed my life. 11/10.",
+        "Smelled weird out of the box.",
+        "I traded my cat for one. Worth it.",
+        "Delivery took forever.",
+        "I dream of Cody Toes every night.",
+        "Only my grandma likes it."
+      ];
+
+      let msgIndex = 0;
+      const chatInterval = setInterval(() => {
+        if (msgIndex < fakeMessages.length) {
+          const div = document.createElement('div');
+          div.className = 'chat-msg';
+          div.textContent = fakeMessages[msgIndex++];
+          chatBox.appendChild(div);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+      }, 1000);
+
+      const bidding = setInterval(() => {
+        bid += Math.floor(Math.random() * 100);
+        bidText.textContent = `Current bid: $${bid}`;
+        if (bid >= 1500) {
+          clearInterval(bidding);
+          bidText.textContent = `Sold for $${bid}!`;
+          clearInterval(chatInterval);
+
+          const increment = setInterval(() => {
+            if (money < bid) {
+              money += 50;
+              moneyCounter.textContent = `$${money}`;
+            } else {
+              clearInterval(increment);
+              moneyCounter.textContent = `$${bid} — CHA-CHING 💸`;
+            }
+          }, 100);
+        }
+      }, 800);
+    }
+  </script>
+
+</body>
+</html>
