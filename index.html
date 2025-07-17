@@ -2,36 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>CODY TOES</title>
+  <title>CODY PARTS</title>
   <style>
     body { margin: 0; font-family: sans-serif; background: #6a0dad; color: white; }
-    header { background: #4b0082; text-align: center; padding: 1em; font-size: 2em; font-weight: bold; position: relative; }
+    header { background: #4b0082; padding: 1em; text-align: center; font-size: 2em; font-weight: bold; position: relative; }
     #totalMoney { position: absolute; top: 20px; right: 20px; font-size: 1em; color: #00ff99; }
-    .popup, .auction { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 999; }
+    .popup, .auction { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 999; }
     .popup-content { background: white; color: black; padding: 2em; border-radius: 12px; text-align: center; width: 300px; }
-    input { width: 80%; padding: 0.5em; font-size: 1em; margin-bottom: 1em; }
-    button { margin: 0.5em; padding: 1em; background: #6a0dad; border: none; border-radius: 8px; color: white; font-size: 1em; cursor: pointer; }
+    input, button { margin: 0.5em; padding: 1em; font-size: 1em; border: none; border-radius: 8px; cursor: pointer; }
+    input { width: 80%; border: 2px solid #6a0dad; }
+    button { background: #6a0dad; color: white; }
     button:hover { background: #4b0082; }
-    .auction-view { padding: 2em; }
-    .chat { background: rgba(255,255,255,0.1); padding: 1em; margin-top: 1em; border-radius: 8px; max-height: 200px; overflow-y: auto; }
+    .auction-view { padding: 2em; text-align: center; }
+    .chat { background: rgba(255,255,255,0.1); padding: 1em; border-radius: 8px; max-height: 200px; overflow-y: auto; width: 80%; margin: 1em auto; }
     .chat-msg { margin-bottom: 0.5em; }
     #middleText { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: #00ff99; padding: 1em 2em; font-size: 2em; border-radius: 12px; display: none; z-index: 1000; }
-    .fade-in { animation: fadeIn 1s ease forwards; }
-    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
   </style>
 </head>
 <body>
-
-<header>CODY TOES<div id="totalMoney">Total Money: $0</div></header>
+<header>CODY PARTS<div id="totalMoney">Total Money: $0</div></header>
 <div id="middleText"></div>
 
 <div class="popup" id="popup">
   <div class="popup-content">
-    <h2>CODY TOES</h2>
-    <input type="text" id="productName" placeholder="Product name" />
-    <button onclick="startAuction('buy')">Buy Cody Toes</button>
-    <button onclick="startAuction('sell')">Sell Cody Toes</button>
-    <button onclick="showInventory()">Inventory</button>
+    <h2>CODY PARTS</h2>
+    <input type="text" id="productName" placeholder="Enter stuff to buy or sell abt cody" />
+    <button id="buyBtn">Buy Cody Parts</button>
+    <button id="sellBtn">Sell Cody Parts</button>
+    <button id="invBtn">Inventory</button>
     <p>Made by: <strong>sodio</strong></p>
     <p>Visitors: <span id="visitorCount"></span></p>
   </div>
@@ -42,120 +40,116 @@
     <h2 id="auctionTitle"></h2>
     <div id="bidText">Starting bid...</div>
     <div id="moneyText">$0</div>
-    <button id="actionBtn" style="display:none;">Action</button>
+    <button id="skipBtn" style="display:none;">Skip</button>
+    <button id="actionBtn" style="display:none;">Finish</button>
     <div class="chat" id="chatBox"></div>
-    <div id="rarityLabel" class="fade-in" style="margin-top:1em;"></div>
+    <div id="rarityLabel" style="margin-top:1em;"></div>
   </div>
 </div>
 
 <script>
-  let money = parseInt(localStorage.getItem("money") || "0");
-  let inventory = JSON.parse(localStorage.getItem("inventory") || "[]");
-  let product = "", bidValue = 0, auctionType = "", rarity = "";
-  let auctionInProgress = false;
+let money = parseInt(localStorage.getItem("money") || "0");
+let inventory = JSON.parse(localStorage.getItem("inventory") || "[]");
+let product = "", bidValue = 0, auctionType = "", rarity = "", finalValue = 0;
+let bidTimer = null, chatTimer = null;
 
+function updateDisplay() {
   document.getElementById("totalMoney").textContent = `Total Money: $${money}`;
-  document.getElementById("visitorCount").textContent = Math.floor(Math.random() * 500 + 1);
-  document.getElementById("popup").style.display = "flex";
+}
 
-  function showMiddle(msg) {
-    const el = document.getElementById("middleText");
-    el.textContent = msg;
-    el.style.display = "block";
-    setTimeout(() => { el.style.display = "none"; }, 3000);
-  }
+function showMiddle(msg) {
+  const el = document.getElementById("middleText");
+  el.textContent = msg;
+  el.style.display = "block";
+  setTimeout(() => el.style.display = "none", 3000);
+}
 
-  function showInventory() {
-    alert("Inventory:\n" + (inventory.length ? inventory.map(i => `• ${i}`).join("\n") : "Empty"));
-  }
+function showInventory() {
+  alert("Inventory:\n" + (inventory.length ? inventory.map(x => "• " + x).join("\n") : "Empty"));
+}
 
-  function getSellValue() {
-    const roll = Math.random();
-    if (roll < 0.000000000001) { rarity = "LEGENDARY"; return 100000000000; }
-    if (roll < 0.17) { rarity = "EPIC"; return 10000000; }
-    if (roll < 0.56) { rarity = "RARE"; return 1000000; }
-    if (roll < 0.9)  { rarity = "UNCOMMON"; return 1000; }
-    rarity = "COMMON"; return 100;
-  }
+function getSellValue() {
+  const r = Math.random();
+  if (r < 0.000000000001) return rarity = "LEGENDARY", 100000000000;
+  if (r < 0.17) return rarity = "EPIC", 10000000;
+  if (r < 0.56) return rarity = "RARE", 1000000;
+  if (r < 0.9) return rarity = "UNCOMMON", 1000;
+  rarity = "COMMON"; return 100;
+}
 
-  function startAuction(type) {
-    if (auctionInProgress) return;
-    auctionInProgress = true;
+function startAuction(type) {
+  product = document.getElementById("productName").value.trim();
+  if (!product) return alert("Enter product name");
+  auctionType = type;
+  bidValue = 500;
+  finalValue = type === "sell" ? getSellValue() : bidValue + Math.floor(Math.random() * 1000 + 500);
+  document.getElementById("popup").style.display = "none";
+  document.getElementById("auction").style.display = "flex";
+  document.getElementById("auctionTitle").textContent = `${type === "buy" ? "Buying" : "Selling"}: ${product}`;
+  document.getElementById("actionBtn").style.display = "none";
+  document.getElementById("skipBtn").style.display = "inline-block";
+  document.getElementById("rarityLabel").textContent = "";
+  document.getElementById("chatBox").innerHTML = "";
 
-    product = document.getElementById("productName").value.trim();
-    if (!product) return alert("Enter product name.");
-
-    auctionType = type;
-    document.getElementById("popup").style.display = "none";
-    document.getElementById("auction").style.display = "block";
-    document.getElementById("chatBox").innerHTML = "";
-    document.getElementById("actionBtn").style.display = "none";
-    document.getElementById("rarityLabel").textContent = "";
-
-    document.getElementById("auctionTitle").textContent = `${type === "buy" ? "Buying" : "Selling"}: ${product}`;
-    bidValue = 500;
-    let finalValue = type === "sell" ? getSellValue() : bidValue + Math.floor(Math.random() * 1000 + 500);
-
-    const chats = [
+  chatTimer = setInterval(() => {
+    const messages = [
       "Death is so hot and juicy",
       "johnbom is so handsome and sigma",
       "🔥 Best purchase I've made this week!",
       "Totally changed my life. 11/10.",
       "Delivery took forever."
     ];
-    let msg = 0;
-    const chatTimer = setInterval(() => {
-      if (msg < chats.length) {
-        let div = document.createElement("div");
-        div.className = "chat-msg";
-        div.textContent = chats[msg++];
-        document.getElementById("chatBox").appendChild(div);
-      }
-    }, 800);
+    let m = document.createElement("div");
+    m.className = "chat-msg";
+    m.textContent = messages[Math.floor(Math.random() * messages.length)];
+    document.getElementById("chatBox").appendChild(m);
+  }, 900);
 
-    const bidTimer = setInterval(() => {
-      bidValue += Math.floor(Math.random() * 100 + 50);
-      document.getElementById("bidText").textContent = `Current bid: $${bidValue}`;
-      document.getElementById("moneyText").textContent = `$${bidValue}`;
-      if (bidValue >= finalValue) {
-        clearInterval(chatTimer);
-        clearInterval(bidTimer);
-        document.getElementById("actionBtn").style.display = "inline-block";
-        document.getElementById("actionBtn").textContent = type === "buy" ? "Buy Item" : "Collect Money";
-        if (type === "sell") {
-          document.getElementById("rarityLabel").textContent = `RARITY: ${rarity}`;
-          document.getElementById("rarityLabel").classList.add("fade-in");
-        }
+  bidTimer = setInterval(() => {
+    bidValue += Math.floor(Math.random() * 100 + 50);
+    document.getElementById("bidText").textContent = `Current bid: $${bidValue}`;
+    document.getElementById("moneyText").textContent = `$${bidValue}`;
+    if (bidValue >= finalValue) finalizeAuction();
+  }, 700);
+}
 
-        document.getElementById("actionBtn").onclick = finishAuction;
-      }
-    }, 700);
-  }
+function finalizeAuction() {
+  clearInterval(chatTimer);
+  clearInterval(bidTimer);
+  document.getElementById("bidText").textContent = `Finalized at $${bidValue}!`;
+  document.getElementById("moneyText").textContent = `$${bidValue}`;
+  document.getElementById("actionBtn").style.display = "inline-block";
+  document.getElementById("skipBtn").style.display = "none";
+  if (auctionType === "sell") document.getElementById("rarityLabel").textContent = `RARITY: ${rarity}`;
+}
 
-  function finishAuction() {
-    if (auctionType === "buy") {
-      if (money >= bidValue) {
-        money -= bidValue;
-        inventory.push(product);
-        showMiddle(`-$${bidValue} spent`);
-      } else {
-        alert("Not enough money.");
-        return;
-      }
-    } else {
-      money += bidValue;
+function finishAuction() {
+  if (auctionType === "buy") {
+    if (money >= bidValue) {
+      money -= bidValue;
       inventory.push(product);
-      showMiddle(`+$${bidValue} (${rarity})`);
-    }
-
-    localStorage.setItem("money", money);
-    localStorage.setItem("inventory", JSON.stringify(inventory));
-    document.getElementById("totalMoney").textContent = `Total Money: $${money}`;
-    document.getElementById("auction").style.display = "none";
-    document.getElementById("popup").style.display = "flex";
-    auctionInProgress = false;
+      showMiddle(`-$${bidValue} spent`);
+    } else return alert("Not enough money");
+  } else {
+    money += bidValue;
+    inventory.push(product);
+    showMiddle(`+$${bidValue} (${rarity})`);
   }
-</script>
+  localStorage.setItem("money", money);
+  localStorage.setItem("inventory", JSON.stringify(inventory));
+  updateDisplay();
+  document.getElementById("auction").style.display = "none";
+  document.getElementById("popup").style.display = "flex";
+}
 
+updateDisplay();
+document.getElementById("skipBtn").onclick = finalizeAuction;
+document.getElementById("actionBtn").onclick = finishAuction;
+document.getElementById("buyBtn").onclick = () => startAuction("buy");
+document.getElementById("sellBtn").onclick = () => startAuction("sell");
+document.getElementById("invBtn").onclick = showInventory;
+document.getElementById("popup").style.display = "flex";
+document.getElementById("visitorCount").textContent = Math.floor(Math.random() * 500 + 1);
+</script>
 </body>
 </html>
